@@ -1,0 +1,118 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name for this build, without the leading v (e.g. 0.1.0)'
+        required: true
+        default: '0.1.0'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "name=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "code=${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "Building PLAYCORE $VERSION (versionCode ${GITHUB_RUN_NUMBER})"
+
+      - name: Unit tests
+        run: gradle :app:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No ANDROID_KEYSTORE_BASE64 secret found."
+            echo "The release APK will be signed with the debug key and is installable, but not publishable to a store."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/playcore-release.jks"
+          echo "PLAYCORE_KEYSTORE_PATH=$RUNNER_TEMP/playcore-release.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          PLAYCORE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          PLAYCORE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          PLAYCORE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          gradle :app:assembleRelease \
+            -PplaycoreVersionName=${{ steps.version.outputs.name }} \
+            -PplaycoreVersionCode=${{ steps.version.outputs.code }} \
+            --no-daemon --stacktrace
+
+      - name: Collect APK
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/app-release.apk \
+             "dist/playcore-${{ steps.version.outputs.name }}.apk"
+          ls -l dist
+          sha256sum dist/*.apk > dist/SHA256SUMS.txt
+          cat dist/SHA256SUMS.txt
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: playcore-release-apk
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: PLAYCORE ${{ steps.version.outputs.name }}
+          body: |
+            PLAYCORE ${{ steps.version.outputs.name }} — Phase 1 preview build.
+
+            Built automatically by the Release APK workflow from commit ${{ github.sha }}.
+
+            What this build contains: game library with manual app classification, search, sorting,
+            favourites and categories; game details and launching; a device dashboard that reports
+            real readings and marks everything else unavailable; settings with theme, AMOLED, accent,
+            sort and layout; and a capability report for overlay, usage access, notifications, media,
+            screen capture and Shizuku.
+
+            What it does not contain: overlays, gaming mode, input plugins, kernel tuning, media tools.
+            Those are later phases and are not stubbed.
+
+            Install with `adb install playcore-${{ steps.version.outputs.name }}.apk`, or open the file
+            on the device. Minimum Android 10 (API 29).
+
+            This APK is signed with a debug key unless the repository owner configured a release
+            keystore, so it is fine for sideloading and testing but not for store distribution.
+          files: dist/*
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
