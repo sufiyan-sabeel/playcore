@@ -6,8 +6,13 @@ import app.playcore.core.permissions.CapabilityManager
 import app.playcore.data.GameRepository
 import app.playcore.data.InstalledAppScanner
 import app.playcore.data.local.PlaycoreDatabase
+import app.playcore.data.local.RoomRestorationStore
 import app.playcore.data.preferences.SettingsRepository
+import app.playcore.domain.restoration.RestorationEngine
+import app.playcore.domain.restoration.RestorationStore
+import app.playcore.domain.restoration.SystemControlPort
 import app.playcore.overlay.OverlayController
+import app.playcore.system.AndroidSystemControlAdapter
 
 /**
  * Manual dependency container.
@@ -29,6 +34,16 @@ class AppContainer(context: Context) {
     val deviceMonitor: DeviceMonitor by lazy { DeviceMonitor(appContext) }
 
     val overlayController: OverlayController by lazy { OverlayController(appContext) }
+
+    val restorationStore: RestorationStore by lazy {
+        RoomRestorationStore(database.restorationDao())
+    }
+
+    val systemControl: SystemControlPort by lazy { AndroidSystemControlAdapter(appContext) }
+
+    val restorationEngine: RestorationEngine by lazy {
+        RestorationEngine(control = systemControl, store = restorationStore)
+    }
 
     val gameRepository: GameRepository by lazy {
         GameRepository(

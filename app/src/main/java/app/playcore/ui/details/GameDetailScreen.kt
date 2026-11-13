@@ -197,6 +197,45 @@ fun GameDetailScreen(
 
                     Spacer(Modifier.height(Space.l))
 
+                    BanneredPanel(title = "Session") {
+                        Text(
+                            text = "Applying a loadout changes only the settings Android lets PLAYCORE write, " +
+                                "records each original value first, and puts them back on restore.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Console.TextDim,
+                        )
+                        Spacer(Modifier.height(Space.m))
+                        Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                            AngularButton(
+                                label = "Apply loadout",
+                                filled = true,
+                                onClick = viewModel::applyLoadout,
+                            )
+                            AngularButton(
+                                label = "Restore",
+                                enabled = state.activeSessionId != null,
+                                onClick = viewModel::restoreLoadout,
+                            )
+                        }
+                        if (state.sessionMessage != null) {
+                            Spacer(Modifier.height(Space.s))
+                            Text(
+                                text = state.sessionMessage.orEmpty(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Console.VioletLight,
+                            )
+                        }
+                        Spacer(Modifier.height(Space.s))
+                        Text(
+                            text = "Brightness lock is stored only: the profile holds no target level to write. " +
+                                "Refresh rate is reported unsupported because Android has no public setter.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Console.TextFaint,
+                        )
+                    }
+
+                    Spacer(Modifier.height(Space.l))
+
                     SectionLabel("Category")
                     Spacer(Modifier.height(Space.s))
                     ChamferPanel {

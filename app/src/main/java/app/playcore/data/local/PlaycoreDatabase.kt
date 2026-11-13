@@ -6,7 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [GameEntity::class, CategoryEntity::class, GameProfileEntity::class],
+    entities = [
+        GameEntity::class,
+        CategoryEntity::class,
+        GameProfileEntity::class,
+        ProfileSessionEntity::class,
+        RestorationRecordEntity::class,
+    ],
     version = DatabaseMigrations.VERSION,
     exportSchema = false,
 )
@@ -17,6 +23,8 @@ abstract class PlaycoreDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
 
     abstract fun gameProfileDao(): GameProfileDao
+
+    abstract fun restorationDao(): RestorationDao
 
     companion object {
         private const val NAME = "playcore.db"
