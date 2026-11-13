@@ -164,11 +164,15 @@ class RestorationAcceptanceTest {
         engine.startSession("com.b", mapOf(dnd to b3))
 
         b.now = 900_000L
+        val writesBeforeRecovery = b.control.writes
         val recovery = engine.recoverStaleSessions(staleAfterMs = 60_000L)
-        assertEquals(1, recovery.recoveredSessions.size)
+
+        // Both sessions close: the superseded one has nothing left to restore, the owner
+        // puts the original back. Exactly one write happens during recovery.
+        assertEquals(2, recovery.recoveredSessions.size)
         assertTrue(recovery.stillUnresolved.isEmpty())
         assertEquals(original, b.control.values[dnd])
-        assertEquals(1, b.control.writes - 2) // two applies, exactly one restore
+        assertEquals(1, b.control.writes - writesBeforeRecovery)
     }
 
     @Test
