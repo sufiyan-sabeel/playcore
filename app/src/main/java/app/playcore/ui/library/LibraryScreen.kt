@@ -135,6 +135,7 @@ fun LibraryScreen(
                 Spacer(Modifier.height(Space.m))
             }
 
+            Box(modifier = Modifier.weight(1f)) {
             when {
                 state.isLoading && state.games.isEmpty() -> LoadingState("Reading installed apps")
                 state.error != null -> ErrorState(
@@ -162,7 +163,7 @@ fun LibraryScreen(
                 )
                 else -> LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 160.dp),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = Space.l, end = Space.l, bottom = Space.l),
                     horizontalArrangement = Arrangement.spacedBy(Space.m),
                     verticalArrangement = Arrangement.spacedBy(Space.m),
@@ -182,6 +183,7 @@ fun LibraryScreen(
                         )
                     }
                 }
+            }
             }
             bottomBar()
         }
