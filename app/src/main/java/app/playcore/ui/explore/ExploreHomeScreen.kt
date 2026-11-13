@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -65,7 +66,10 @@ fun ExploreHomeScreen(
         backdrop = state.settings.backdrop,
         vignette = state.settings.vignette,
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        // fillMaxSize, not fillMaxWidth: the body below carries weight(1f), and a
+        // wrap-content column would collapse it to zero height and push the bottom
+        // bar off the screen.
+        Column(modifier = Modifier.fillMaxSize()) {
             ReferenceHeader(
                 title = "PLAYCORE",
                 subtitle = "PLAYCORE / GAME SYSTEM",
