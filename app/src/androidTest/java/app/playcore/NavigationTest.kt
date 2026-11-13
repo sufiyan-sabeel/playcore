@@ -21,25 +21,26 @@ class NavigationTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun homeShowsWordmarkAndNavigation() {
+    fun homeShowsWordmarkModeTabsAndBottomBar() {
         composeRule.onNodeWithText("PLAYCORE").assertIsDisplayed()
-        composeRule.onNodeWithText("Library").assertIsDisplayed()
-        composeRule.onNodeWithText("Dashboard").assertIsDisplayed()
-        composeRule.onNodeWithText("Tools").assertIsDisplayed()
-        composeRule.onNodeWithText("Settings").assertIsDisplayed()
+        composeRule.onNodeWithText("EXPLORE").assertIsDisplayed()
+        composeRule.onNodeWithText("HANDHELD").assertIsDisplayed()
+        composeRule.onNodeWithText("GAMEPAD").assertIsDisplayed()
+        composeRule.onNodeWithText("SUPER BASE").assertIsDisplayed()
     }
 
     @Test
-    fun libraryTabOpensLibraryScreen() {
-        composeRule.onNodeWithText("Library").performClick()
+    fun libraryDestinationOpensLibraryScreen() {
+        composeRule.onNodeWithText("LIBRARY").performClick()
         composeRule.onNodeWithContentDescription("Add apps").assertIsDisplayed()
-        composeRule.onNodeWithText("Search name or package").assertIsDisplayed()
+        composeRule.onNodeWithText("Search apps").assertIsDisplayed()
     }
 
     @Test
-    fun settingsTabShowsAppearanceSection() {
-        composeRule.onNodeWithText("Settings").performClick()
-        composeRule.onNodeWithText("Appearance").assertIsDisplayed()
-        composeRule.onNodeWithText("AMOLED black").assertIsDisplayed()
+    fun superBaseShowsTheEightTiles() {
+        composeRule.onNodeWithText("SUPER BASE").performClick()
+        composeRule.onNodeWithText("Game Center").assertIsDisplayed()
+        composeRule.onNodeWithText("Plugin Library").assertIsDisplayed()
+        composeRule.onNodeWithText("Core Reactor").assertIsDisplayed()
     }
 }

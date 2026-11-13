@@ -7,15 +7,14 @@ import app.playcore.data.GameRepository
 import app.playcore.data.InstalledAppScanner
 import app.playcore.data.local.PlaycoreDatabase
 import app.playcore.data.preferences.SettingsRepository
+import app.playcore.overlay.OverlayController
 
 /**
  * Manual dependency container.
  *
- * Chosen over Hilt for Phase 1: it adds no annotation processor, no build-time
- * code generation and no kapt/ksp cost, and every dependency here is a singleton
- * with an obvious lifetime. If the graph grows past a few dozen nodes in a later
- * phase, swapping this for Hilt is a contained change because nothing else
- * constructs these objects.
+ * Chosen over Hilt for Phase 1: no annotation processor, no generated code, and
+ * every dependency is a singleton with an obvious lifetime. Swapping it later is
+ * contained because nothing else constructs these objects.
  */
 class AppContainer(context: Context) {
 
@@ -29,11 +28,14 @@ class AppContainer(context: Context) {
 
     val deviceMonitor: DeviceMonitor by lazy { DeviceMonitor(appContext) }
 
+    val overlayController: OverlayController by lazy { OverlayController(appContext) }
+
     val gameRepository: GameRepository by lazy {
         GameRepository(
             context = appContext,
             gameDao = database.gameDao(),
             categoryDao = database.categoryDao(),
+            profileDao = database.gameProfileDao(),
             scanner = InstalledAppScanner(appContext),
         )
     }

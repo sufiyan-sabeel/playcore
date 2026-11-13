@@ -22,11 +22,7 @@ class MainActivity : ComponentActivity() {
             val settings by container.settingsRepository.settings
                 .collectAsStateWithLifecycle(initialValue = AppSettings())
 
-            PlaycoreTheme(
-                themeMode = settings.themeMode,
-                amoled = settings.amoled,
-                accent = settings.accent,
-            ) {
+            PlaycoreTheme(themeMode = settings.themeMode) {
                 PlaycoreApp()
             }
         }

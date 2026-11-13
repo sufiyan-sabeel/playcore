@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [GameEntity::class, CategoryEntity::class],
+    entities = [GameEntity::class, CategoryEntity::class, GameProfileEntity::class],
     version = DatabaseMigrations.VERSION,
     exportSchema = false,
 )
@@ -15,6 +15,8 @@ abstract class PlaycoreDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun gameProfileDao(): GameProfileDao
 
     companion object {
         private const val NAME = "playcore.db"

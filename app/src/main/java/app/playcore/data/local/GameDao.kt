@@ -33,6 +33,25 @@ interface GameDao {
     @Query("UPDATE library_games SET lastLaunchedAt = :timestamp WHERE packageName = :packageName")
     suspend fun setLastLaunchedAt(packageName: String, timestamp: Long)
 
+    @Query("UPDATE library_games SET totalPlayMs = totalPlayMs + :deltaMs WHERE packageName = :packageName")
+    suspend fun addPlaytime(packageName: String, deltaMs: Long)
+
     @Query("SELECT COUNT(*) FROM library_games")
     suspend fun count(): Int
+}
+
+@Dao
+interface GameProfileDao {
+
+    @Query("SELECT * FROM game_profiles WHERE packageName = :packageName LIMIT 1")
+    fun observeOne(packageName: String): Flow<GameProfileEntity?>
+
+    @Query("SELECT * FROM game_profiles")
+    fun observeAll(): Flow<List<GameProfileEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(entity: GameProfileEntity)
+
+    @Query("DELETE FROM game_profiles WHERE packageName = :packageName")
+    suspend fun delete(packageName: String)
 }

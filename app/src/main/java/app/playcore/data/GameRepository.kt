@@ -4,12 +4,15 @@ import android.content.Context
 import android.content.Intent
 import app.playcore.core.model.Game
 import app.playcore.core.model.GameCategory
+import app.playcore.core.model.GameProfile
 import app.playcore.core.model.InstalledApp
 import app.playcore.core.model.LaunchResult
 import app.playcore.data.local.CategoryDao
 import app.playcore.data.local.CategoryEntity
 import app.playcore.data.local.GameDao
 import app.playcore.data.local.GameEntity
+import app.playcore.data.local.GameProfileDao
+import app.playcore.data.local.toEntity
 import app.playcore.data.local.toModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -19,14 +22,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
- * The library: what the user chose to keep, plus the installed-app catalogue
- * used to add entries. Room is the source of truth; the package manager is only
- * consulted for discovery and for launching.
+ * The library and the per-game profiles. Room is the source of truth; the package
+ * manager is consulted only for discovery and for launching.
  */
 class GameRepository(
     private val context: Context,
     private val gameDao: GameDao,
     private val categoryDao: CategoryDao,
+    private val profileDao: GameProfileDao,
     private val scanner: InstalledAppScanner,
 ) {
 
@@ -45,6 +48,16 @@ class GameRepository(
     fun observeCategories(): Flow<List<GameCategory>> =
         categoryDao.observeAll().map { entities -> entities.map { it.toModel() } }
 
+    /** A stored profile, or the documented defaults when the game has none yet. */
+    fun observeProfile(packageName: String): Flow<GameProfile> =
+        profileDao.observeOne(packageName).map { it?.toModel() ?: GameProfile(packageName = packageName) }
+
+    fun observeAllProfiles(): Flow<List<GameProfile>> =
+        profileDao.observeAll().map { rows -> rows.map { it.toModel() } }
+
+    suspend fun saveProfile(profile: GameProfile) =
+        profileDao.upsert(profile.copy(updatedAt = System.currentTimeMillis()).toEntity())
+
     suspend fun refreshInstalledApps(): List<InstalledApp> = withContext(Dispatchers.IO) {
         val apps = scanner.scan()
         installedPackages.value = apps.map { it.packageName }.toSet()
@@ -62,7 +75,10 @@ class GameRepository(
         )
     }
 
-    suspend fun removeFromLibrary(packageName: String) = gameDao.delete(packageName)
+    suspend fun removeFromLibrary(packageName: String) {
+        profileDao.delete(packageName)
+        gameDao.delete(packageName)
+    }
 
     suspend fun toggleFavorite(packageName: String) {
         val current = gameDao.find(packageName) ?: return
@@ -88,10 +104,10 @@ class GameRepository(
 
     suspend fun isInLibrary(packageName: String): Boolean = gameDao.find(packageName) != null
 
-    /**
-     * Launches the installed app through the platform launcher intent. Returns a
-     * typed result instead of throwing, so the UI can explain what went wrong.
-     */
+    suspend fun addPlaytime(packageName: String, deltaMs: Long) {
+        if (deltaMs > 0L) gameDao.addPlaytime(packageName, deltaMs)
+    }
+
     suspend fun launch(packageName: String): LaunchResult {
         val pm = context.packageManager
         val launchIntent = pm.getLaunchIntentForPackage(packageName)

@@ -26,72 +26,70 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.playcore.core.designsystem.PlaycoreSpacing
+import app.playcore.core.designsystem.Console
+import app.playcore.core.designsystem.Space
+import app.playcore.core.model.Metric
+import app.playcore.ui.components.ConsoleBackground
 import app.playcore.ui.components.LoadingState
 import app.playcore.ui.components.MetricTile
-import app.playcore.ui.components.SectionHeader
+import app.playcore.ui.components.ReferenceHeader
+import app.playcore.ui.system.SystemViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun DashboardScreen(viewModel: DashboardViewModel = viewModel()) {
+fun DashboardScreen(
+    modeBar: @Composable () -> Unit,
+    bottomBar: @Composable () -> Unit,
+    viewModel: DashboardViewModel = viewModel(),
+    systemViewModel: SystemViewModel = viewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val system by systemViewModel.uiState.collectAsStateWithLifecycle()
     val snapshot = state.snapshot
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = PlaycoreSpacing.l, vertical = PlaycoreSpacing.l),
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                SectionHeader(
-                    title = "Dashboard",
-                    subtitle = "Readings straight from Android, refreshed every ${state.intervalMs / 1000}s",
-                )
-            }
-            Spacer(Modifier.width(PlaycoreSpacing.s))
-            IconButton(onClick = viewModel::refreshNow) {
-                Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "Refresh now",
-                    modifier = Modifier.size(22.dp),
-                )
-            }
-        }
-
-        if (snapshot == null) {
-            LoadingState(message = "Reading device telemetry")
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(
-                    start = PlaycoreSpacing.l,
-                    end = PlaycoreSpacing.l,
-                    bottom = PlaycoreSpacing.xxl,
-                ),
-                horizontalArrangement = Arrangement.spacedBy(PlaycoreSpacing.m),
-                verticalArrangement = Arrangement.spacedBy(PlaycoreSpacing.m),
-            ) {
-                items(snapshot.metrics, key = { it.label() }) { metric ->
-                    MetricTile(metric = metric)
-                }
-            }
-            Text(
-                text = "Captured ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(snapshot.capturedAt))}. " +
-                    "Values marked unavailable were refused by the platform, not skipped by PLAYCORE.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = PlaycoreSpacing.l),
+    ConsoleBackground(system.settings.backdrop, system.settings.vignette) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            ReferenceHeader(
+                title = "Monitor",
+                subtitle = "PLAYCORE / LIVE DEVICE READINGS",
+                trailing = {
+                    IconButton(onClick = viewModel::refreshNow) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh now", tint = Console.TextDim)
+                    }
+                },
             )
-            Spacer(Modifier.height(PlaycoreSpacing.s))
+            modeBar()
+
+            if (snapshot == null) {
+                LoadingState("Reading device telemetry")
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(start = Space.l, end = Space.l, bottom = Space.l),
+                    horizontalArrangement = Arrangement.spacedBy(Space.m),
+                    verticalArrangement = Arrangement.spacedBy(Space.m),
+                ) {
+                    items(snapshot.metrics, key = { it.metricKey() }) { metric ->
+                        MetricTile(metric = metric)
+                    }
+                }
+                Text(
+                    text = "Captured ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(snapshot.capturedAt))}. " +
+                        "Values marked unavailable were refused by the platform, not skipped by PLAYCORE.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Console.TextFaint,
+                    modifier = Modifier.padding(horizontal = Space.l, vertical = Space.s),
+                )
+            }
+            bottomBar()
         }
     }
 }
 
-private fun app.playcore.core.model.Metric.label(): String = when (this) {
-    is app.playcore.core.model.Metric.Value -> label
-    is app.playcore.core.model.Metric.Unavailable -> label
+private fun Metric.metricKey(): String = when (this) {
+    is Metric.Value -> label
+    is Metric.Unavailable -> label
 }

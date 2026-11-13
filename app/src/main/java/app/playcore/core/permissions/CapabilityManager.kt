@@ -30,6 +30,37 @@ class CapabilityManager(private val context: Context) {
         mediaLibrary(),
         screenCapture(),
         shizuku(),
+        root(),
+        kernelControl(),
+    )
+
+    /**
+     * Root detection is a probe of well-known su locations. It proves a su binary
+     * exists, not that PLAYCORE has been granted access — no shell command is run.
+     */
+    private fun root(): Capability {
+        val candidates = listOf(
+            "/system/bin/su", "/system/xbin/su", "/sbin/su", "/su/bin/su",
+            "/system/sd/xbin/su", "/data/local/bin/su", "/data/local/xbin/su",
+        )
+        val found = candidates.any { runCatching { java.io.File(it).exists() }.getOrDefault(false) }
+        return Capability(
+            id = CapabilityId.ROOT,
+            title = "Root access",
+            status = if (found) CapabilityStatus.AVAILABLE else CapabilityStatus.BACKEND_REQUIRED,
+            explanation = if (found) {
+                "A su binary is present. PLAYCORE has not run any privileged command; each feature asks first."
+            } else {
+                "No su binary was found. Kernel and CPU-frequency controls stay unavailable; the rest of PLAYCORE works normally."
+            },
+        )
+    }
+
+    private fun kernelControl(): Capability = Capability(
+        id = CapabilityId.KERNEL_CONTROL,
+        title = "Kernel controls",
+        status = CapabilityStatus.BACKEND_REQUIRED,
+        explanation = "Governors, frequency limits, fan nodes and charging bypass need a privileged shell plus a device that exposes those interfaces. PLAYCORE does not write them in this build.",
     )
 
     private fun overlay(): Capability {

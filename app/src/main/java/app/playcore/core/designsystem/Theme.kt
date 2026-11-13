@@ -1,22 +1,58 @@
 package app.playcore.core.designsystem
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.playcore.core.model.AccentChoice
 import app.playcore.core.model.ThemeMode
 
-object PlaycoreSpacing {
+/**
+ * Design tokens measured from the reference application (see docs/VISUAL_INVENTORY.md).
+ *
+ * Every colour here came out of the published screenshots by pixel histogram, not
+ * from a design preference. The reference is a violet console HUD: chamfered
+ * panels, parallelogram tabs, heavy italic display type.
+ */
+object Console {
+    // Dark scene, measured
+    val Background = Color(0xFF181030)
+    val Panel = Color(0xFF201838)
+    val PanelAlt = Color(0xFF282040)
+    val Elevated = Color(0xFF302048)
+    val ElevatedAlt = Color(0xFF382850)
+
+    // Violet accents, measured
+    val Violet = Color(0xFF8060E8)
+    val VioletLight = Color(0xFFA080F0)
+    val VioletDeep = Color(0xFF483090)
+
+    // Text
+    val Text = Color(0xFFF2F0FA)
+    val TextDim = Color(0xFFA0A0B0)
+    val TextFaint = Color(0xFF6F6885)
+
+    // Light mode, measured
+    val LightSurface = Color(0xFFF8F8F8)
+    val LightTint = Color(0xFFE8E0F8)
+    val LightPanel = Color(0xFFF0E8F8)
+    val LightText = Color(0xFF1A1430)
+    val LightTextDim = Color(0xFF5A5470)
+
+    // States
+    val Ready = Color(0xFF63C6A0)
+    val Preview = Color(0xFFE0A458)
+    val Blocked = Color(0xFFD9736B)
+}
+
+object Space {
     val xxs = 2.dp
     val xs = 4.dp
     val s = 8.dp
@@ -27,100 +63,81 @@ object PlaycoreSpacing {
     val huge = 48.dp
 }
 
-/** AMOLED surfaces are pure black; graphite is the non-AMOLED dark base. */
-object PlaycorePalette {
-    val Amoled = Color(0xFF000000)
-    val Graphite = Color(0xFF0E1214)
-    val Charcoal = Color(0xFF151B1D)
-    val Elevated = Color(0xFF1C2325)
-    val Outline = Color(0xFF2A3335)
-    val TextPrimary = Color(0xFFECF1F1)
-    val TextSecondary = Color(0xFF9BAAAC)
-    val Warning = Color(0xFFE0A458)
-    val Danger = Color(0xFFD9736B)
-    val Success = Color(0xFF5FB98C)
-
-    val LightSurface = Color(0xFFF6F8F8)
-    val LightCard = Color(0xFFFFFFFF)
-    val LightOutline = Color(0xFFDCE3E3)
-    val LightText = Color(0xFF101716)
-    val LightTextSecondary = Color(0xFF5B6A6C)
+/** Chamfer sizes used across panels and buttons. */
+object Chamfer {
+    val panel = 14.dp
+    val tile = 10.dp
+    val chip = 8.dp
+    val stroke = 1.dp
 }
 
-fun accentColor(choice: AccentChoice): Color = when (choice) {
-    AccentChoice.TEAL -> Color(0xFF2FB3A6)
-    AccentChoice.CYAN -> Color(0xFF35C2E0)
-    AccentChoice.VIOLET -> Color(0xFF9B7BF0)
-    AccentChoice.AMBER -> Color(0xFFE3A34A)
-}
+private val ConsoleTypography = Typography(
+    // Display faces are heavy and italic in the reference.
+    displayLarge = TextStyle(fontSize = 34.sp, lineHeight = 38.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic),
+    displayMedium = TextStyle(fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic),
+    displaySmall = TextStyle(fontSize = 24.sp, lineHeight = 28.sp, fontWeight = FontWeight.ExtraBold, fontStyle = FontStyle.Italic),
+    headlineMedium = TextStyle(fontSize = 20.sp, lineHeight = 25.sp, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic),
+    headlineSmall = TextStyle(fontSize = 18.sp, lineHeight = 23.sp, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic),
+    titleLarge = TextStyle(fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold),
+    titleMedium = TextStyle(fontSize = 14.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold),
+    bodyLarge = TextStyle(fontSize = 14.sp, lineHeight = 20.sp),
+    bodyMedium = TextStyle(fontSize = 12.5.sp, lineHeight = 18.sp),
+    bodySmall = TextStyle(fontSize = 11.5.sp, lineHeight = 16.sp),
+    // Labels are uppercase and letterspaced in the reference.
+    labelLarge = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.2.sp),
+    labelMedium = TextStyle(fontSize = 10.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.4.sp),
+    labelSmall = TextStyle(fontSize = 9.sp, lineHeight = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.2.sp),
+)
 
-private fun darkScheme(amoled: Boolean, accent: AccentChoice) = darkColorScheme(
-    primary = accentColor(accent),
-    onPrimary = Color(0xFF04100F),
-    primaryContainer = accentColor(accent).copy(alpha = 0.18f),
-    onPrimaryContainer = accentColor(accent),
-    secondary = PlaycorePalette.TextSecondary,
-    onSecondary = Color(0xFF04100F),
-    background = if (amoled) PlaycorePalette.Amoled else PlaycorePalette.Graphite,
-    onBackground = PlaycorePalette.TextPrimary,
-    surface = if (amoled) PlaycorePalette.Amoled else PlaycorePalette.Graphite,
-    onSurface = PlaycorePalette.TextPrimary,
-    surfaceVariant = PlaycorePalette.Charcoal,
-    onSurfaceVariant = PlaycorePalette.TextSecondary,
-    surfaceContainer = PlaycorePalette.Charcoal,
-    surfaceContainerHigh = PlaycorePalette.Elevated,
-    outline = PlaycorePalette.Outline,
-    outlineVariant = PlaycorePalette.Outline,
-    error = PlaycorePalette.Danger,
+private fun consoleDark() = darkColorScheme(
+    primary = Console.Violet,
+    onPrimary = Color(0xFF100A24),
+    primaryContainer = Console.VioletDeep,
+    onPrimaryContainer = Console.VioletLight,
+    secondary = Console.VioletLight,
+    onSecondary = Color(0xFF100A24),
+    tertiary = Console.VioletDeep,
+    background = Console.Background,
+    onBackground = Console.Text,
+    surface = Console.Background,
+    onSurface = Console.Text,
+    surfaceVariant = Console.Panel,
+    onSurfaceVariant = Console.TextDim,
+    surfaceContainer = Console.Panel,
+    surfaceContainerHigh = Console.PanelAlt,
+    surfaceContainerHighest = Console.Elevated,
+    outline = Console.VioletDeep,
+    outlineVariant = Console.PanelAlt,
+    error = Console.Blocked,
     onError = Color(0xFF1A0A08),
 )
 
-private fun lightScheme(accent: AccentChoice) = lightColorScheme(
-    primary = accentColor(accent),
+private fun consoleLight() = lightColorScheme(
+    primary = Console.Violet,
     onPrimary = Color.White,
-    primaryContainer = accentColor(accent).copy(alpha = 0.15f),
-    onPrimaryContainer = Color(0xFF0B3B37),
-    background = PlaycorePalette.LightSurface,
-    onBackground = PlaycorePalette.LightText,
-    surface = PlaycorePalette.LightSurface,
-    onSurface = PlaycorePalette.LightText,
-    surfaceVariant = PlaycorePalette.LightCard,
-    onSurfaceVariant = PlaycorePalette.LightTextSecondary,
-    surfaceContainer = PlaycorePalette.LightCard,
-    surfaceContainerHigh = PlaycorePalette.LightCard,
-    outline = PlaycorePalette.LightOutline,
-    outlineVariant = PlaycorePalette.LightOutline,
+    primaryContainer = Console.LightTint,
+    onPrimaryContainer = Color(0xFF2A1B5E),
+    secondary = Console.VioletDeep,
+    onSecondary = Color.White,
+    background = Console.LightSurface,
+    onBackground = Console.LightText,
+    surface = Console.LightSurface,
+    onSurface = Console.LightText,
+    surfaceVariant = Console.LightTint,
+    onSurfaceVariant = Console.LightTextDim,
+    surfaceContainer = Console.LightPanel,
+    surfaceContainerHigh = Console.LightTint,
+    surfaceContainerHighest = Console.LightTint,
+    outline = Console.VioletLight,
+    outlineVariant = Console.LightTint,
     error = Color(0xFFB3261E),
     onError = Color.White,
 )
 
-private val PlaycoreTypography = Typography(
-    displaySmall = TextStyle(fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold),
-    headlineMedium = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold),
-    headlineSmall = TextStyle(fontSize = 20.sp, lineHeight = 26.sp, fontWeight = FontWeight.SemiBold),
-    titleLarge = TextStyle(fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold),
-    titleMedium = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
-    bodyLarge = TextStyle(fontSize = 15.sp, lineHeight = 21.sp),
-    bodyMedium = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
-    bodySmall = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
-    labelLarge = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium),
-    labelMedium = TextStyle(fontSize = 11.sp, lineHeight = 15.sp, fontWeight = FontWeight.Medium),
-    labelSmall = TextStyle(fontSize = 10.sp, lineHeight = 14.sp, fontWeight = FontWeight.Medium),
-)
-
-private val PlaycoreShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp),
-)
-
 @Composable
 fun PlaycoreTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
-    amoled: Boolean = true,
-    accent: AccentChoice = AccentChoice.TEAL,
+    themeMode: ThemeMode = ThemeMode.DARK,
+    amoled: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -129,9 +146,8 @@ fun PlaycoreTheme(
         ThemeMode.LIGHT -> false
     }
     MaterialTheme(
-        colorScheme = if (dark) darkScheme(amoled, accent) else lightScheme(accent),
-        typography = PlaycoreTypography,
-        shapes = PlaycoreShapes,
+        colorScheme = if (dark) consoleDark() else consoleLight(),
+        typography = ConsoleTypography,
         content = content,
     )
 }

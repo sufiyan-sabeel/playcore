@@ -9,21 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,13 +22,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.playcore.core.designsystem.PlaycoreSpacing
+import app.playcore.core.designsystem.Console
+import app.playcore.core.designsystem.Space
+import app.playcore.core.model.CubeMode
 import app.playcore.core.model.LaunchResult
+import app.playcore.core.model.OverlayStyle
+import app.playcore.overlay.label
+import app.playcore.ui.components.AngularButton
+import app.playcore.ui.components.AngularTabs
+import app.playcore.ui.components.AngularToggle
 import app.playcore.ui.components.AppIcon
+import app.playcore.ui.components.BadgeTone
+import app.playcore.ui.components.BanneredPanel
+import app.playcore.ui.components.ChamferPanel
+import app.playcore.ui.components.ConsoleBackground
 import app.playcore.ui.components.EmptyState
 import app.playcore.ui.components.InfoRow
-import app.playcore.ui.components.PlaycoreCard
-import app.playcore.ui.components.SectionHeader
+import app.playcore.ui.components.ReferenceHeader
+import app.playcore.ui.components.SectionLabel
+import app.playcore.ui.components.StatusBadge
+import app.playcore.ui.explore.formatPlaytime
+import app.playcore.ui.system.SystemViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,166 +51,211 @@ import java.util.Locale
 fun GameDetailScreen(
     onBack: () -> Unit,
     viewModel: GameDetailViewModel = viewModel(),
+    systemViewModel: SystemViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val system by systemViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val game = state.game
+    val profile = state.profile
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = PlaycoreSpacing.s, vertical = PlaycoreSpacing.s),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text(
-                text = "Game details",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
+    ConsoleBackground(system.settings.backdrop, system.settings.vignette) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            ReferenceHeader(
+                title = game?.label ?: "Game",
+                subtitle = "PLAYCORE / GAME PROFILE",
+                onBack = onBack,
             )
-        }
 
-        if (game == null) {
-            EmptyState(
-                title = "Not in the library",
-                message = "This entry was removed. Add it again from the library browser.",
-                actionLabel = "Go back",
-                onAction = onBack,
-            )
-            return@Column
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = PlaycoreSpacing.l)
-                .padding(bottom = PlaycoreSpacing.xxl),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                AppIcon(packageName = game.packageName, size = 64.dp)
-                Spacer(Modifier.width(PlaycoreSpacing.m))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = game.label,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                    Text(
-                        text = game.packageName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                IconButton(onClick = viewModel::toggleFavorite) {
-                    Icon(
-                        imageVector = if (game.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = "Toggle favourite",
-                        tint = if (game.isFavorite) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            if (game == null) {
+                EmptyState(
+                    title = "Not in the library",
+                    message = "This entry was removed. Add it again from the library browser.",
+                    actionLabel = "Go back",
+                    onAction = onBack,
+                )
+                return@Column
             }
 
-            Spacer(Modifier.height(PlaycoreSpacing.l))
-
-            Button(
-                onClick = {
-                    viewModel.launch()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = game.isInstalled,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Space.l),
             ) {
-                Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(PlaycoreSpacing.s))
-                Text(if (game.isInstalled) "Launch" else "Not installed")
-            }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AppIcon(packageName = game.packageName, size = 56.dp)
+                    Spacer(Modifier.width(Space.m))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = game.packageName,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Console.TextDim,
+                        )
+                        Text(
+                            text = formatPlaytime(game.totalPlayMs) + " recorded",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Console.TextDim,
+                        )
+                    }
+                    AngularToggle(checked = game.isFavorite, onCheckedChange = { viewModel.toggleFavorite() })
+                }
 
-            when (val result = state.lastLaunchResult) {
-                LaunchResult.NotInstalled -> {
-                    Spacer(Modifier.height(PlaycoreSpacing.s))
-                    Text(
+                Spacer(Modifier.height(Space.l))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                    AngularButton(
+                        label = if (game.isInstalled) "Launch" else "Not installed",
+                        filled = true,
+                        enabled = game.isInstalled,
+                        onClick = viewModel::launch,
+                    )
+                    StatusBadge(
+                        text = if (game.isInstalled) "Installed" else "Missing",
+                        tone = if (game.isInstalled) BadgeTone.READY else BadgeTone.BLOCKED,
+                    )
+                }
+
+                when (state.lastLaunchResult) {
+                    LaunchResult.NotInstalled -> Text(
                         text = "The app is no longer installed on this device.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
+                        color = Console.Blocked,
                     )
-                }
-
-                LaunchResult.NoLaunchIntent -> {
-                    Spacer(Modifier.height(PlaycoreSpacing.s))
-                    Text(
+                    LaunchResult.NoLaunchIntent -> Text(
                         text = "Android did not return a launcher intent for this package.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
+                        color = Console.Blocked,
                     )
+                    LaunchResult.Launched, null -> Unit
                 }
 
-                LaunchResult.Launched, null -> Unit
-            }
+                Spacer(Modifier.height(Space.xl))
 
-            Spacer(Modifier.height(PlaycoreSpacing.xl))
+                if (profile != null) {
+                    BanneredPanel(title = "Loadout") {
+                        SectionLabel("Overlay style")
+                        Spacer(Modifier.height(Space.s))
+                        val styles = OverlayStyle.entries
+                        AngularTabs(
+                            options = styles.map { it.label() },
+                            selectedIndex = styles.indexOf(profile.overlayStyle).coerceAtLeast(0),
+                            onSelect = { viewModel.setOverlayStyle(styles[it]) },
+                        )
 
-            SectionHeader(title = "Category")
-            Spacer(Modifier.height(PlaycoreSpacing.m))
-            PlaycoreCard {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(PlaycoreSpacing.s),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    FilterChip(
-                        selected = game.categoryId == null,
-                        onClick = { viewModel.setCategory(null) },
-                        label = { Text("None") },
-                    )
-                    state.categories.take(2).forEach { category ->
-                        FilterChip(
-                            selected = game.categoryId == category.id,
-                            onClick = { viewModel.setCategory(category.id) },
-                            label = { Text(category.name) },
+                        Spacer(Modifier.height(Space.m))
+                        SectionLabel("Panel mode")
+                        Spacer(Modifier.height(Space.s))
+                        val modes = CubeMode.entries
+                        AngularTabs(
+                            options = modes.map { it.name.lowercase().replaceFirstChar(Char::uppercase) },
+                            selectedIndex = modes.indexOf(profile.cubeMode).coerceAtLeast(0),
+                            onSelect = { viewModel.setCubeMode(modes[it]) },
+                        )
+
+                        Spacer(Modifier.height(Space.m))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Do Not Disturb", style = MaterialTheme.typography.titleMedium, color = Console.Text)
+                                Text(
+                                    text = "Needs DND access; stored either way",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Console.TextDim,
+                                )
+                            }
+                            AngularToggle(checked = profile.dndEnabled, onCheckedChange = viewModel::setDnd)
+                        }
+                        Spacer(Modifier.height(Space.m))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Brightness lock", style = MaterialTheme.typography.titleMedium, color = Console.Text)
+                                Text(
+                                    text = "Needs write access; stored either way",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Console.TextDim,
+                                )
+                            }
+                            AngularToggle(checked = profile.brightnessLock, onCheckedChange = viewModel::setBrightnessLock)
+                        }
+
+                        Spacer(Modifier.height(Space.m))
+                        SectionLabel("Refresh rate")
+                        Spacer(Modifier.height(Space.s))
+                        val rates = listOf<Int?>(null, 60, 90, 120)
+                        AngularTabs(
+                            options = rates.map { it?.let { hz -> "${hz}Hz" } ?: "Default" },
+                            selectedIndex = rates.indexOf(profile.refreshRateHz).coerceAtLeast(0),
+                            onSelect = { viewModel.setRefreshRate(rates[it]) },
+                        )
+                        Spacer(Modifier.height(Space.s))
+                        Text(
+                            text = "${profile.enabledCards.size} panel cards selected for this game.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Console.TextFaint,
+                        )
+                    }
+
+                    Spacer(Modifier.height(Space.l))
+
+                    SectionLabel("Category")
+                    Spacer(Modifier.height(Space.s))
+                    ChamferPanel {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                            AngularButton(
+                                label = "None",
+                                filled = game.categoryId == null,
+                                onClick = { viewModel.setCategory(null) },
+                            )
+                            state.categories.take(2).forEach { category ->
+                                AngularButton(
+                                    label = category.name,
+                                    filled = game.categoryId == category.id,
+                                    onClick = { viewModel.setCategory(category.id) },
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(Space.m))
+                        AngularButton(
+                            label = "New category",
+                            onClick = { viewModel.createCategory("Category ${state.categories.size + 1}") },
                         )
                     }
                 }
-                Spacer(Modifier.height(PlaycoreSpacing.m))
-                OutlinedButton(
+
+                Spacer(Modifier.height(Space.l))
+
+                SectionLabel("Information")
+                Spacer(Modifier.height(Space.s))
+                ChamferPanel {
+                    InfoRow("Package", game.packageName)
+                    InfoRow("Installed", if (game.isInstalled) "Yes" else "No")
+                    InfoRow("Added", formatTimestamp(game.addedAt))
+                    InfoRow(
+                        "Last launched",
+                        game.lastLaunchedAt?.let { formatTimestamp(it) } ?: "Never launched from PLAYCORE",
+                    )
+                    InfoRow("Playtime", formatPlaytime(game.totalPlayMs))
+                    InfoRow("Favourite", if (game.isFavorite) "Yes" else "No")
+                }
+
+                Spacer(Modifier.height(Space.l))
+
+                AngularButton(
+                    label = "Remove from console",
                     onClick = {
-                        viewModel.createCategory("Favourites ${state.categories.size + 1}")
+                        viewModel.removeFromLibrary {
+                            Toast.makeText(context, "Removed from the console", Toast.LENGTH_SHORT).show()
+                            onBack()
+                        }
                     },
-                ) { Text("New category") }
-            }
-
-            Spacer(Modifier.height(PlaycoreSpacing.xl))
-
-            SectionHeader(title = "Information")
-            Spacer(Modifier.height(PlaycoreSpacing.m))
-            PlaycoreCard {
-                InfoRow(label = "Package", value = game.packageName)
-                InfoRow(label = "Installed", value = if (game.isInstalled) "Yes" else "No")
-                InfoRow(
-                    label = "Added",
-                    value = formatTimestamp(game.addedAt),
                 )
-                InfoRow(
-                    label = "Last launched",
-                    value = game.lastLaunchedAt?.let { formatTimestamp(it) } ?: "Never launched from PLAYCORE",
+                Spacer(Modifier.height(Space.s))
+                Text(
+                    text = "Removing an entry never uninstalls the app.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Console.TextFaint,
                 )
-                InfoRow(label = "Favourite", value = if (game.isFavorite) "Yes" else "No")
-            }
-
-            Spacer(Modifier.height(PlaycoreSpacing.xl))
-
-            OutlinedButton(
-                onClick = {
-                    viewModel.removeFromLibrary {
-                        Toast.makeText(context, "Removed from library", Toast.LENGTH_SHORT).show()
-                        onBack()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Remove from library (app stays installed)")
+                Spacer(Modifier.height(Space.xxl))
             }
         }
     }
