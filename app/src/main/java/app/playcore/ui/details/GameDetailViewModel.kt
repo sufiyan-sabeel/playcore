@@ -42,7 +42,7 @@ class GameDetailViewModel(
     private val repository = container.gameRepository
     private val packageName: String = savedStateHandle.get<String>("packageName").orEmpty()
     private val lastLaunchResult = MutableStateFlow<LaunchResult?>(null)
-    private val restorationEngine = container.restorationEngine
+    private val restorationCoordinator = container.restorationCoordinator
     private val sessionUi = MutableStateFlow(SessionUi())
 
     val uiState: StateFlow<GameDetailUiState> = combine(
@@ -108,7 +108,7 @@ class GameDetailViewModel(
     fun applyLoadout() {
         val profile = uiState.value.profile ?: return
         viewModelScope.launch {
-            val outcome = restorationEngine.startSession(packageName, desiredFor(profile))
+            val outcome = restorationCoordinator.startSession(packageName, desiredFor(profile))
             sessionUi.value = SessionUi(
                 sessionId = outcome.session?.id,
                 message = "Applied ${outcome.appliedCount} · skipped ${outcome.skippedCount} · failed ${outcome.failedCount}",
@@ -119,7 +119,7 @@ class GameDetailViewModel(
     fun restoreLoadout() {
         val sessionId = sessionUi.value.sessionId ?: return
         viewModelScope.launch {
-            val outcome = restorationEngine.restoreSession(sessionId)
+            val outcome = restorationCoordinator.restoreSession(sessionId)
             sessionUi.value = SessionUi(
                 sessionId = if (outcome.fullyResolved) null else sessionId,
                 message = "Restored ${outcome.restoredCount} · left alone ${outcome.skippedChangedCount} · " +

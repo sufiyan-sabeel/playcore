@@ -35,6 +35,9 @@ jobs:
       - name: Unit tests
         run: gradle :app:testDebugUnitTest --no-daemon --stacktrace
 
+      - name: Compile instrumented tests
+        run: gradle :app:assembleDebugAndroidTest --no-daemon --stacktrace
+
       - name: Assemble debug APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace
 

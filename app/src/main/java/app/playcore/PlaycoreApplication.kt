@@ -17,9 +17,10 @@ class PlaycoreApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
-        // A session left open by a crash, a kill or a reboot is restored at startup.
+        // A session left open by a crash, a kill or a reboot is restored at startup,
+        // and every later apply waits for this to finish.
         appScope.launch {
-            runCatching { container.restorationEngine.recoverStaleSessions() }
+            runCatching { container.restorationCoordinator.recoverAtStartup() }
         }
     }
 }

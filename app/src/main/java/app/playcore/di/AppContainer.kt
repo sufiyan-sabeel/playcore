@@ -8,6 +8,7 @@ import app.playcore.data.InstalledAppScanner
 import app.playcore.data.local.PlaycoreDatabase
 import app.playcore.data.local.RoomRestorationStore
 import app.playcore.data.preferences.SettingsRepository
+import app.playcore.domain.restoration.RestorationCoordinator
 import app.playcore.domain.restoration.RestorationEngine
 import app.playcore.domain.restoration.RestorationStore
 import app.playcore.domain.restoration.SystemControlPort
@@ -43,6 +44,10 @@ class AppContainer(context: Context) {
 
     val restorationEngine: RestorationEngine by lazy {
         RestorationEngine(control = systemControl, store = restorationStore)
+    }
+
+    val restorationCoordinator: RestorationCoordinator by lazy {
+        RestorationCoordinator(restorationEngine)
     }
 
     val gameRepository: GameRepository by lazy {

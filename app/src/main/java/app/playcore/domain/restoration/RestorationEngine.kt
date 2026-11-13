@@ -136,9 +136,12 @@ class RestorationEngine(
 
         // Ownership: collapse a chain of open sessions on the same target so the
         // value restored later is the user's original, not an intermediate one.
-        val inherited = takeOwnership(target, session.id)
-        if (inherited is TargetValue.Unknown) {
-            return persist(
+        val effectiveOriginal = when (val ownership = takeOwnership(target, session.id)) {
+            Ownership.FirstOwner -> original
+
+            is Ownership.Inherited -> ownership.original
+
+            Ownership.InheritedUnknown -> return persist(
                 RestorationRecord(
                     sessionId = session.id,
                     target = target,
@@ -153,8 +156,25 @@ class RestorationEngine(
                     updatedAt = now,
                 )
             )
+
+            // The supersede write failed: two sessions would own this setting, so
+            // nothing may be applied until the ownership is recorded.
+            Ownership.NotRecorded -> return persist(
+                RestorationRecord(
+                    sessionId = session.id,
+                    target = target,
+                    original = original,
+                    applied = null,
+                    applyStatus = ApplyStatus.FAILED_PERSIST,
+                    restoreStatus = RestoreStatus.NOT_REQUIRED,
+                    failure = FailureInfo(
+                        "OWNERSHIP_NOT_RECORDED",
+                        "An earlier session could not be marked superseded, so nothing was changed.",
+                    ),
+                    updatedAt = now,
+                )
+            )
         }
-        val effectiveOriginal = inherited ?: original
 
         // Persist the snapshot before touching the device.
         val pending = RestorationRecord(
@@ -210,20 +230,30 @@ class RestorationEngine(
         )
     }
 
+    private sealed interface Ownership {
+        data object FirstOwner : Ownership
+        data class Inherited(val original: TargetValue) : Ownership
+        data object InheritedUnknown : Ownership
+        data object NotRecorded : Ownership
+    }
+
     /**
-     * Marks every other open record for [target] as superseded and returns the
-     * oldest original value, or null when this session is the first to touch it.
+     * Marks every other open record for [target] as superseded and reports the
+     * oldest original value. A failed supersede is reported, not swallowed: two
+     * owners would otherwise be able to restore the same setting.
      */
-    private suspend fun takeOwnership(target: SystemTarget, sessionId: String): TargetValue? {
-        val open = runCatching { store.openRecordsForTarget(target) }.getOrDefault(emptyList())
-            .filter { it.sessionId != sessionId && it.needsRestore }
-            .sortedBy { it.updatedAt }
-        if (open.isEmpty()) return null
+    private suspend fun takeOwnership(target: SystemTarget, sessionId: String): Ownership {
+        val open = runCatching { store.openRecordsForTarget(target) }.getOrNull()
+            ?.filter { it.sessionId != sessionId && it.needsRestore }
+            ?.sortedBy { it.updatedAt }
+            ?: return Ownership.NotRecorded
+        if (open.isEmpty()) return Ownership.FirstOwner
 
         val oldest = open.first().original
         val now = clock()
+        var recorded = true
         open.forEach { record ->
-            runCatching {
+            val result = runCatching {
                 store.updateRecord(
                     record.copy(
                         restoreStatus = RestoreStatus.SUPERSEDED,
@@ -235,8 +265,11 @@ class RestorationEngine(
                     )
                 )
             }
+            if (result.isFailure) recorded = false
         }
-        return oldest
+        if (!recorded) return Ownership.NotRecorded
+
+        return if (oldest is TargetValue.Unknown) Ownership.InheritedUnknown else Ownership.Inherited(oldest)
     }
 
     suspend fun restoreSession(sessionId: String): RestoreOutcome =
