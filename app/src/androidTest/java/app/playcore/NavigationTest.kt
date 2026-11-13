@@ -37,9 +37,9 @@ class NavigationTest {
     fun libraryDestinationOpensLibraryScreen() {
         composeRule.onAllNodesWithText("LIBRARY").onFirst().performClick()
         composeRule.waitForIdle()
-        // Existence, not visibility: during the navigation transition the outgoing screen
-        // is still composed, so a visibility assertion races the animation.
-        composeRule.onAllNodesWithText("Search apps").onFirst().assertExists()
+        // The Library header subtitle is unique to this destination, so it proves the
+        // navigation actually landed rather than that some other node happens to exist.
+        composeRule.onAllNodesWithText("ON THE CONSOLE", substring = true).onFirst().assertExists()
         composeRule.onAllNodesWithText("Only fav").onFirst().assertExists()
     }
 
