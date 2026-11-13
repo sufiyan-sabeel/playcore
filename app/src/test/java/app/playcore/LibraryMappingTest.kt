@@ -50,8 +50,9 @@ class LibraryMappingTest {
     @Test
     fun `settings defaults are local-first and conservative`() {
         val defaults = AppSettings()
-        assertEquals(ThemeMode.SYSTEM, defaults.themeMode)
-        assertTrue(defaults.amoled)
+        assertEquals(ThemeMode.DARK, defaults.themeMode)
+        assertEquals("starfield", defaults.backdrop)
+        assertTrue(defaults.vignette)
         assertEquals(LibrarySort.RECENT, defaults.librarySort)
         assertEquals(LayoutMode.GRID, defaults.layout)
         assertTrue(defaults.dashboardIntervalMs >= 1_000L)
