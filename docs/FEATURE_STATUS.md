@@ -28,6 +28,9 @@ are therefore Implemented, not Tested.
 | Game library: discovery, add, remove, launch | library | Implemented | `data/GameRepository.kt`, `LibraryScreen.kt` | PlaycoreDatabaseTest (device) | Inferred |
 | Search, sort, filter | library | Tested | `domain/LibraryFilter.kt` | LibraryFilterTest (11) | — |
 | Per-game profiles | data | Tested | `GameProfileEntity`, `GameDetailViewModel` | ProfileMappingTest (5) | Verified names |
+| Profile restoration engine | restoration | Tested | `domain/restoration/*`, `data/local/RoomRestorationStore.kt` | RestorationEngineTest (14) | Passed in CI (run 43459317835) |
+| Stale-session recovery at startup | restoration | Implemented | `PlaycoreApplication.kt`, `RestorationEngine.recoverStaleSessions` | RestorationEngineTest (2 cases) | Domain only; not run on a device |
+| Room schema v3 migration | data | Implemented | `DatabaseMigrations.MIGRATION_2_3` | — | Migration SQL only; no device test |
 | Room schema v2 with real migration | data | Implemented | `DatabaseMigrations.kt` | PlaycoreDatabaseTest (device) | — |
 | Playtime and rank | data | Tested | `GameDao.addPlaytime`, rank function | ProfileMappingTest, mapping tests | — |
 | Monitor: real device readings | monitoring | Implemented | `core/monitoring/DeviceMonitor.kt` | — | — |
