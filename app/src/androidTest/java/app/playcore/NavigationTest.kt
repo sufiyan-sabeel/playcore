@@ -1,5 +1,6 @@
 package app.playcore
 
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -36,7 +37,11 @@ class NavigationTest {
     @Test
     fun libraryDestinationOpensLibraryScreen() {
         composeRule.onAllNodesWithText("LIBRARY").onFirst().performClick()
-        composeRule.onAllNodesWithText("Search apps").onFirst().assertIsDisplayed()
+        composeRule.waitForIdle()
+        // Existence, not visibility: during the navigation transition the outgoing screen
+        // is still composed, so a visibility assertion races the animation.
+        composeRule.onAllNodesWithText("Search apps").onFirst().assertExists()
+        composeRule.onAllNodesWithText("Only fav").onFirst().assertExists()
     }
 
     @Test
