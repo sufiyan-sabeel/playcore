@@ -1,5 +1,10 @@
 # Feature status — Phase 1
 
+**Verified build:** release v0.1.0, workflow run 43439309038, APK `playcore-0.1.0.apk`
+(20,841,700 bytes, sha256 `dae799e2…f57444`), package `app.playcore`, versionCode 3,
+minSdk 29, targetSdk 35, signed with the debug key. Three earlier runs failed and were fixed:
+a theme type error, then a lintVitalRelease error on an invalid backup rule.
+
 Status vocabulary: Planned, In Progress, Implemented, Tested, Blocked, Not Applicable.
 "Implemented" means the code exists and the project builds. "Tested" is used only where a test
 actually ran and passed; instrumented tests have not run in CI, so they are listed as Implemented,
@@ -7,7 +12,7 @@ not Tested.
 
 | Feature | Module | Status | Source | Test coverage | Test result | Known limitation |
 | --- | --- | --- | --- | --- | --- | --- |
-| Gradle + Kotlin + Compose configuration | build | Implemented | `settings.gradle.kts`, `app/build.gradle.kts`, `gradle/libs.versions.toml` | CI build | Pending first CI run | No wrapper JAR committed |
+| Gradle + Kotlin + Compose configuration | build | Tested | `settings.gradle.kts`, `app/build.gradle.kts`, `gradle/libs.versions.toml` | CI build | Passed: run 43439309038 built the release APK | No wrapper JAR committed |
 | Application class and DI container | app | Implemented | `PlaycoreApplication.kt`, `di/AppContainer.kt` | — | Not run | Manual DI, no Hilt |
 | Main activity and theme wiring | app | Implemented | `MainActivity.kt` | NavigationTest (device) | Not run in CI | — |
 | Design tokens and theme | designsystem | Implemented | `core/designsystem/Theme.kt` | — | Not run | Two colour schemes only |
@@ -30,8 +35,8 @@ not Tested.
 | Capability report and shortcuts | permissions | Implemented | `core/permissions/CapabilityManager.kt` | — | Not run | Status only; no privileged operations |
 | Overlay / usage / media / capture / Shizuku | permissions | Implemented (status) | same | — | Not run | Detection and settings shortcuts only |
 | Room database and DAOs | data | Implemented | `data/local/*` | PlaycoreDatabaseTest (device) | Not run in CI | Version 1, no migrations yet |
-| Unit tests | test | Tested | `app/src/test/**` | 15 cases | Passed on JVM | — |
+| Unit tests | test | Tested | `app/src/test/**` | 15 cases | Passed in GitHub Actions (run 43439309038) | — |
 | Instrumented tests | test | Implemented | `app/src/androidTest/**` | 8 cases | Not run (no emulator in CI) | Needs a device |
-| CI workflow | ci | Implemented | `.github/workflows/ci.yml` | — | Pending first run | — |
-| Release workflow | ci | Implemented | `.github/workflows/release-apk.yml` | — | Pending first run | Debug-signed without secrets |
+| CI workflow | ci | Tested | `.github/workflows/ci.yml` | — | Passed (run 1 after the theme fix) | — |
+| Release workflow | ci | Tested | `.github/workflows/release-apk.yml` | — | Passed: published v0.1.0, 20,841,700 bytes | Debug-signed without secrets |
 | Overlays, gaming mode, input plugins, kernel tuning | later phases | Planned | — | — | — | Phase 4–6 |
