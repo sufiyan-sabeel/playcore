@@ -5,7 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,7 +52,7 @@ private data class TopLevelDestination(
 
 private val topLevelDestinations = listOf(
     TopLevelDestination(PlaycoreRoutes.HOME, "Home", Icons.Filled.Home),
-    TopLevelDestination(PlaycoreRoutes.LIBRARY, "Library", Icons.Filled.List),
+    TopLevelDestination(PlaycoreRoutes.LIBRARY, "Library", Icons.AutoMirrored.Filled.List),
     TopLevelDestination(PlaycoreRoutes.DASHBOARD, "Dashboard", Icons.Filled.Info),
     TopLevelDestination(PlaycoreRoutes.TOOLS, "Tools", Icons.Filled.Build),
     TopLevelDestination(PlaycoreRoutes.SETTINGS, "Settings", Icons.Filled.Settings),
