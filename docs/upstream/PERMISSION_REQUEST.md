@@ -11,6 +11,23 @@ it and I will say plainly when it has gone.
 | Telegram (official) | `t.me/ZUANVFXPROJECT3` | Named in the README as the official channel. Use the short version, then offer to email the detail. |
 | GitHub issue | `github.com/zuanvfx02/zkmnext-gamespace/issues` | Four open issues, zero maintainer replies. Use it only to create a dated public record. |
 
+
+## The four permissions, kept separate
+
+The request deliberately asks for four different things. A "yes" to one is not a "yes" to another, and
+the answer needs to be read that way.
+
+| # | Permission | Question in the letter | If granted | If refused |
+| --- | --- | --- | --- | --- |
+| 1 | Redistribute the **unchanged** APK | Q5 | The prepared mirror release can be published, labelled unofficial | No mirror; the APK stays a local verification copy only |
+| 2 | **Access to** the corresponding source | Q1, Q3, Q7 | Source review, and a basis for real reuse once the licence is settled | No source review; PLAYCORE stays clean-room |
+| 3 | **Modify, rebrand and distribute** a derivative | Q6 | PLAYCORE could be built on upstream code, under whatever licence the author requires | PLAYCORE stays an independent implementation |
+| 4 | **Use of names, logos and trademarks** | Q8 | PLAYCORE could reference the original by name in certain ways | PLAYCORE refers to it only as a factual reference, with no marks |
+
+Note on item 4: PLAYCORE does not need the marks — it has its own name, icon and artwork, and the request
+says so. The question is asked so the answer is on record, not because PLAYCORE wants to use ZEA, the ZKM
+or ZKMNEXT wordmarks, or the character art. A refusal here changes nothing about PLAYCORE's own identity.
+
 ## Subject
 
 Permission, source and licence clarification — ZKMNEXT GameSpace v1.2.9
@@ -57,10 +74,14 @@ I would be grateful for answers to these seven questions:
 7. **Is the GPL-3.0 grant on your other repository**, `zuan-kernel-manager-next` — specifically its
    `feature/gamespace/` package, whose files carry "Copyright (c) 2026 ZKM / GPL-3.0-or-later" —
    intended to extend to reuse of that code in a rebranded application?
+8. **Do you permit any use of the ZKMNEXT and ZKM names, the GameSpace name, or the ZEA character and
+   artwork** in a third-party application — for example a factual "based on ZKMNEXT GameSpace" credit, or
+   a compatibility statement? PLAYCORE does not need them and will not use them without written
+   permission; I am asking so the position is recorded either way.
 
-To be clear about what I am not asking for: I am not asking for the ZEA character, the ZKM or ZKMNEXT
-names and wordmarks, the character artwork, or the Oxanium-derived logo treatment. PLAYCORE has its own
-identity and will keep it separate.
+To be clear about what I am not asking for: PLAYCORE will not carry the ZEA character, the ZKM or ZKMNEXT
+names and wordmarks, the character artwork, or the Oxanium-derived logo treatment. It has its own name,
+icon and artwork and will keep them separate. Question 8 exists only to put your position on record.
 
 If the answer is "no licence" or "no permission", I will keep PLAYCORE as a clean-room independent
 implementation and will not reuse any of your code or assets. If the answer is "GPL-3.0", I will comply
