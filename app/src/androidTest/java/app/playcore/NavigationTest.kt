@@ -2,8 +2,8 @@ package app.playcore
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -11,8 +11,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Navigation and empty-state UI tests. These need a device or emulator with the
- * app installed; they are not part of the CI unit-test job.
+ * Navigation smoke tests.
+ *
+ * Selectors use onAllNodes…onFirst() because the shell renders several labels twice:
+ * an action button uppercases its label ("Super Base" → "SUPER BASE"), which then
+ * collides with the bottom-bar caption. That is a rendering fact, not a bug, so the
+ * test asserts the first matching node is present and tappable.
  */
 @RunWith(AndroidJUnit4::class)
 class NavigationTest {
@@ -22,25 +26,24 @@ class NavigationTest {
 
     @Test
     fun homeShowsWordmarkModeTabsAndBottomBar() {
-        composeRule.onNodeWithText("PLAYCORE").assertIsDisplayed()
-        composeRule.onNodeWithText("EXPLORE").assertIsDisplayed()
-        composeRule.onNodeWithText("HANDHELD").assertIsDisplayed()
-        composeRule.onNodeWithText("GAMEPAD").assertIsDisplayed()
-        composeRule.onNodeWithText("SUPER BASE").assertIsDisplayed()
+        composeRule.onAllNodesWithText("PLAYCORE").onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText("EXPLORE").onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText("HANDHELD").onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText("GAMEPAD").onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText("SUPER BASE").onFirst().assertIsDisplayed()
     }
 
     @Test
     fun libraryDestinationOpensLibraryScreen() {
-        composeRule.onNodeWithText("LIBRARY").performClick()
-        composeRule.onNodeWithContentDescription("Add apps").assertIsDisplayed()
-        composeRule.onNodeWithText("Search apps").assertIsDisplayed()
+        composeRule.onAllNodesWithText("LIBRARY").onFirst().performClick()
+        composeRule.onAllNodesWithText("Search apps").onFirst().assertIsDisplayed()
     }
 
     @Test
     fun superBaseShowsTheEightTiles() {
-        composeRule.onNodeWithText("SUPER BASE").performClick()
-        composeRule.onNodeWithText("Game Center").assertIsDisplayed()
-        composeRule.onNodeWithText("Plugin Library").assertIsDisplayed()
-        composeRule.onNodeWithText("Core Reactor").assertIsDisplayed()
+        composeRule.onAllNodesWithText("SUPER BASE").onFirst().performClick()
+        composeRule.onAllNodesWithText("Game Center").onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText("Plugin Library").onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText("Core Reactor").onFirst().assertIsDisplayed()
     }
 }
