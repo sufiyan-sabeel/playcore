@@ -148,3 +148,36 @@ measured values rather than approximations.
 
 These replace the teal-on-graphite tokens currently in `core/designsystem/Theme.kt`, which were an
 invention of the Phase 1 preview and match nothing in the reference.
+
+## 9. Implementation status per screen (build 0.2.0)
+
+Evidence levels are unchanged: VERIFIED means seen in a reference screenshot; INFERRED means the
+destination and every label are verified but the composition is PLAYCORE's; BLOCKED means there is
+not enough evidence to reproduce it.
+
+| Screen | Evidence | State in build | Notes |
+| --- | --- | --- | --- |
+| Explore home | INFERRED | Built | Header, mode tabs, session panel, recents, console panel |
+| Game library | INFERRED | Built | Adaptive 4-column grid, search, sort tabs, add-app dialog |
+| Monitor | INFERRED | Built | Real readings only; unavailable values carry the reason |
+| Super Base hub | INFERRED | Built | Eight verified tiles with Ready / Preview badges |
+| Game Center | INFERRED | Built | Playtime, rank ladder, most played — all from Room |
+| Game Library tile | INFERRED | Built | Library list with playtime and profile count |
+| Plugin Library | INFERRED | Built | Twenty verified plugins, each with its access requirement |
+| Control Panel | INFERRED | Built | Seven verified groups, gated on backend rather than fake switches |
+| Custom Mode | INFERRED | Built | Read-only; states that limits need a privileged shell |
+| Atmosphere | INFERRED | Built | Ten verified backdrops, particles, vignette; LED marked unsupported |
+| Core Reactor | INFERRED | Built | Balance / Rise / Eco stored; writes flagged as needing privilege |
+| Root Tools | INFERRED | Built | Root, Shizuku and kernel capability report |
+| Energy Cube screen | INFERRED | Built | Four styles, nineteen cards, real floating-panel preview |
+| Handheld lobby | INFERRED | Built | Verified labels: "Your lobby is empty", "Per-game loadout", "Start" |
+| Gamepad mode | INFERRED | Built | Real controller detection, focus-order list |
+| Help | VERIFIED content | Built | Seven verified topics, bodies written for PLAYCORE |
+| Game profile editor | INFERRED | Built | Overlay style, panel mode, DND, brightness lock, refresh rate, cards |
+| Settings | INFERRED | Built | Theme, library defaults, monitor interval, permissions, about |
+| Character Studio screens | VERIFIED | Out of scope | Character system is upstream identity; PLAYCORE ships none |
+| Energy Cube full card layout | BLOCKED | Transport only | The floating panel is real; the 19-card composition is not drawn |
+
+The floating panel is a real `WindowManager` overlay behind the display-over-other-apps permission.
+It shows the selected style name and a session marker. It is deliberately not presented as the
+finished Energy Cube.

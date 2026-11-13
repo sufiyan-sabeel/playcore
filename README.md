@@ -4,7 +4,7 @@ An independent Android gaming launcher: a library you curate yourself, a device 
 reports real readings, and a capability report that says plainly what the device will and will not
 allow. Offline-first, no account, no advertising SDK, no analytics.
 
-**Status: Phase 1 preview (0.1.0).** Phase 1 is the foundation, the game library and the dashboard.
+**Status: Phase 1 shell rebuild (0.2.0).** Phase 1 is the foundation, the game library and the dashboard.
 Overlays, gaming mode, input plugins and kernel tuning are later phases and are not stubbed here.
 
 PLAYCORE is not a fork, continuation or endorsed version of any other launcher. It was written from
@@ -14,13 +14,18 @@ scratch against publicly documented behaviour.
 
 | Area | Behaviour |
 | --- | --- |
+| Shell | Three modes — Explore, Handheld, Gamepad — around a Super Base hub of eight tiles, matching the reference structure. |
+| Design | Violet console language measured from the reference: chamfered panels, parallelogram tabs and toggles, italic display type. |
 | Library | Every app with a launcher icon can be discovered and added. PLAYCORE never guesses which apps are games; you classify them. |
 | Search and sort | Search by name or package; sort by recent, name or favourites-first; filter to favourites and by category. |
 | Game details | Icon, name, package, launch, favourite toggle, category assignment, add/remove from the library without uninstalling. |
 | Launching | Through the platform launcher intent. Missing apps and packages with no launcher intent produce a typed result and a visible message. |
 | Dashboard | Battery level, charge status and temperature, RAM used and available, storage used, network transport, refresh rate, CPU model and Android version. |
 | Unavailable values | Shown as "Unavailable" with the reason the platform gave, never as a zero. |
-| Settings | Theme (system/dark/light), AMOLED black, accent colour, default sort, default layout, dashboard refresh interval, version, licences. |
+| Profiles | Per-game overlay style, panel mode, DND and brightness-lock intent, refresh rate and card set, stored in Room schema v2. |
+| Overlay | Four verified styles, nineteen verified cards, and a real permission-gated floating panel as the Phase 3 transport layer. |
+| Atmosphere | Ten verified backdrops that change the app background immediately, plus particles and vignette. |
+| Settings | Theme, library defaults, monitor interval, permission centre, version, licences. |
 | Capabilities | Overlay, usage access, notifications, media, screen capture and Shizuku, each with a status and a working shortcut to the right settings screen. |
 | Persistence | Room for library entries and categories; DataStore for preferences. |
 
