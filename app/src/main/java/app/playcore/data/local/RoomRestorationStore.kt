@@ -4,6 +4,7 @@ import app.playcore.domain.restoration.ProfileSession
 import app.playcore.domain.restoration.RestorationRecord
 import app.playcore.domain.restoration.RestorationStore
 import app.playcore.domain.restoration.SessionState
+import app.playcore.domain.restoration.SystemTarget
 
 /** Room-backed implementation of the engine's persistence port. */
 class RoomRestorationStore(private val dao: RestorationDao) : RestorationStore {
@@ -28,4 +29,7 @@ class RoomRestorationStore(private val dao: RestorationDao) : RestorationStore {
 
     override suspend fun findSession(sessionId: String): ProfileSession? =
         dao.findSession(sessionId)?.toModel()
+
+    override suspend fun openRecordsForTarget(target: SystemTarget): List<RestorationRecord> =
+        dao.openRecordsForTarget(target.key).map { it.toModel() }
 }

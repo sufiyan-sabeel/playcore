@@ -77,6 +77,13 @@ class RestorationEngineTest {
             sessions.values.filter { it.state == SessionState.ACTIVE }
 
         override suspend fun findSession(sessionId: String): ProfileSession? = sessions[sessionId]
+
+        override suspend fun openRecordsForTarget(target: SystemTarget): List<RestorationRecord> {
+            val activeIds = sessions.values.filter { it.state == SessionState.ACTIVE }.map { it.id }.toSet()
+            return records.values
+                .filter { it.target == target && it.sessionId in activeIds && it.needsRestore }
+                .sortedBy { it.updatedAt }
+        }
     }
 
     private class Harness {

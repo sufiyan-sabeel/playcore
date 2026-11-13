@@ -26,6 +26,18 @@ interface RestorationDao {
     @Query("SELECT * FROM restoration_records WHERE sessionId = :sessionId ORDER BY target ASC")
     suspend fun recordsForSession(sessionId: String): List<RestorationRecordEntity>
 
+    @Query(
+        """
+        SELECT r.* FROM restoration_records r
+        INNER JOIN profile_sessions s ON s.id = r.sessionId
+        WHERE r.target = :target
+          AND s.state = 'ACTIVE'
+          AND r.restoreStatus IN ('PENDING', 'FAILED_RESTORE', 'UNRESOLVED')
+        ORDER BY r.updatedAt ASC
+        """
+    )
+    suspend fun openRecordsForTarget(target: String): List<RestorationRecordEntity>
+
     @Query("SELECT * FROM restoration_records ORDER BY updatedAt DESC")
     suspend fun allRecords(): List<RestorationRecordEntity>
 }

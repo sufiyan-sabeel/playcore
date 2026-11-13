@@ -33,5 +33,11 @@ interface RestorationStore {
 
     suspend fun activeSessions(): List<ProfileSession>
 
+    /**
+     * Records for [target] that still owe a restore, across all sessions, oldest
+     * first. Used to decide ownership when a new session wants the same setting.
+     */
+    suspend fun openRecordsForTarget(target: SystemTarget): List<RestorationRecord>
+
     suspend fun findSession(sessionId: String): ProfileSession?
 }

@@ -47,6 +47,13 @@ enum class RestoreStatus {
     SKIPPED_CHANGED_EXTERNALLY,
     FAILED_RESTORE,
     UNRESOLVED,
+
+    /**
+     * Another session took ownership of this setting while this one was still
+     * open. Its value is not restored: doing so would put back an intermediate
+     * value instead of the user's original.
+     */
+    SUPERSEDED,
 }
 
 enum class SessionState { ACTIVE, COMPLETED }
@@ -93,6 +100,7 @@ data class RestorationRecord(
             RestoreStatus.RESTORED,
             RestoreStatus.RESTORED_UNVERIFIED,
             RestoreStatus.SKIPPED_CHANGED_EXTERNALLY,
+            RestoreStatus.SUPERSEDED,
             -> false
         }
 }

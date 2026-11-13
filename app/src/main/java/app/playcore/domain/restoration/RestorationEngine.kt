@@ -1,6 +1,8 @@
 package app.playcore.domain.restoration
 
 import java.util.UUID
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Applies a per-game loadout and puts the device back afterwards.
@@ -16,6 +18,14 @@ import java.util.UUID
  * Restoration refuses to overwrite a value that changed independently, refuses to
  * restore from an [TargetValue.Unknown] original, and is idempotent: asking twice
  * is a no-op, not a second write.
+ *
+ * Ownership: at most one open session owns a given target. If a newer session asks
+ * for a setting an older open session already changed, the older record is marked
+ * [RestoreStatus.SUPERSEDED] and the newer session inherits the **oldest** original
+ * value, so restoring puts back what the user actually had rather than an
+ * intermediate value from the middle of the chain. Every entry point runs under a
+ * single mutex, so apply, restore and recovery can never interleave inside one
+ * process.
  */
 class RestorationEngine(
     private val control: SystemControlPort,
@@ -24,7 +34,14 @@ class RestorationEngine(
     private val newSessionId: () -> String = { UUID.randomUUID().toString() },
 ) {
 
+    private val mutex = Mutex()
+
     suspend fun startSession(
+        packageName: String,
+        desired: Map<SystemTarget, TargetValue>,
+    ): SessionOutcome = mutex.withLock { startSessionLocked(packageName, desired) }
+
+    private suspend fun startSessionLocked(
         packageName: String,
         desired: Map<SystemTarget, TargetValue>,
     ): SessionOutcome {
@@ -117,11 +134,33 @@ class RestorationEngine(
             )
         }
 
+        // Ownership: collapse a chain of open sessions on the same target so the
+        // value restored later is the user's original, not an intermediate one.
+        val inherited = takeOwnership(target, session.id)
+        if (inherited is TargetValue.Unknown) {
+            return persist(
+                RestorationRecord(
+                    sessionId = session.id,
+                    target = target,
+                    original = TargetValue.Unknown,
+                    applied = null,
+                    applyStatus = ApplyStatus.SKIPPED_UNREADABLE_ORIGINAL,
+                    restoreStatus = RestoreStatus.NOT_REQUIRED,
+                    failure = FailureInfo(
+                        "INHERITED_ORIGINAL_UNKNOWN",
+                        "An earlier session left no confirmed original for this setting, so nothing was changed.",
+                    ),
+                    updatedAt = now,
+                )
+            )
+        }
+        val effectiveOriginal = inherited ?: original
+
         // Persist the snapshot before touching the device.
         val pending = RestorationRecord(
             sessionId = session.id,
             target = target,
-            original = original,
+            original = effectiveOriginal,
             applied = null,
             applyStatus = ApplyStatus.PENDING_APPLY,
             restoreStatus = RestoreStatus.PENDING,
@@ -171,7 +210,39 @@ class RestorationEngine(
         )
     }
 
-    suspend fun restoreSession(sessionId: String): RestoreOutcome {
+    /**
+     * Marks every other open record for [target] as superseded and returns the
+     * oldest original value, or null when this session is the first to touch it.
+     */
+    private suspend fun takeOwnership(target: SystemTarget, sessionId: String): TargetValue? {
+        val open = runCatching { store.openRecordsForTarget(target) }.getOrDefault(emptyList())
+            .filter { it.sessionId != sessionId && it.needsRestore }
+            .sortedBy { it.updatedAt }
+        if (open.isEmpty()) return null
+
+        val oldest = open.first().original
+        val now = clock()
+        open.forEach { record ->
+            runCatching {
+                store.updateRecord(
+                    record.copy(
+                        restoreStatus = RestoreStatus.SUPERSEDED,
+                        failure = FailureInfo(
+                            "SUPERSEDED_BY_SESSION",
+                            "Session $sessionId took ownership of this setting; this session no longer restores it.",
+                        ),
+                        updatedAt = now,
+                    )
+                )
+            }
+        }
+        return oldest
+    }
+
+    suspend fun restoreSession(sessionId: String): RestoreOutcome =
+        mutex.withLock { restoreSessionLocked(sessionId) }
+
+    private suspend fun restoreSessionLocked(sessionId: String): RestoreOutcome {
         val records = store.recordsForSession(sessionId)
         val pending = records.filter { it.needsRestore }.sortedBy { it.target.ordinal }
 
@@ -229,6 +300,18 @@ class RestorationEngine(
                 record.copy(
                     restoreStatus = RestoreStatus.UNRESOLVED,
                     failure = FailureInfo("CURRENT_UNREADABLE", "The current value could not be read; left for inspection."),
+                    updatedAt = clock(),
+                )
+            )
+        }
+
+        // Already back at the original: a previous attempt wrote it and died before the
+        // record could be settled. Settle it instead of reporting an external change.
+        if (current == record.original) {
+            return update(
+                record.copy(
+                    restoreStatus = RestoreStatus.RESTORED,
+                    failure = null,
                     updatedAt = clock(),
                 )
             )
