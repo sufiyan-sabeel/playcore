@@ -203,7 +203,7 @@ class CapabilityManager(private val context: Context) {
                 Uri.parse("package:${context.packageName}")
             )
 
-            CapabilityId.SCREEN_CAPTURE -> return false
+            CapabilityId.SCREEN_CAPTURE, CapabilityId.ROOT, CapabilityId.KERNEL_CONTROL -> return false
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return runCatching {

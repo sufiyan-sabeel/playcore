@@ -44,12 +44,16 @@ fun GamepadScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val gamepadName: String? = remember {
-        InputDevice.getDeviceIds()
-            .mapNotNull { runCatching { InputDevice.getDevice(it) }.getOrNull() }
-            .firstOrNull { device ->
-                (device.sources and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD
+        var found: String? = null
+        for (id in InputDevice.getDeviceIds()) {
+            val device = runCatching { InputDevice.getDevice(id) }.getOrNull() ?: continue
+            val sources = device.sources
+            if (sources and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) {
+                found = device.name
+                break
             }
-            ?.name
+        }
+        found
     }
 
     ConsoleBackground(state.settings.backdrop, state.settings.vignette) {

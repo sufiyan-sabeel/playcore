@@ -8,6 +8,7 @@ import app.playcore.core.model.AppMode
 import app.playcore.core.model.AppSettings
 import app.playcore.core.model.Capability
 import app.playcore.core.model.CapabilityId
+import app.playcore.core.model.CubeMode
 import app.playcore.core.model.Game
 import app.playcore.core.model.GameProfile
 import app.playcore.core.model.LayoutMode
@@ -79,6 +80,8 @@ class SystemViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setOverlayStyle(style: OverlayStyle) =
         viewModelScope.launch { settingsRepository.setOverlayStyle(style) }
+
+    fun setCubeMode(mode: CubeMode) = viewModelScope.launch { settingsRepository.setCubeMode(mode) }
 
     fun setBackdrop(id: String) = viewModelScope.launch { settingsRepository.setBackdrop(id) }
 

@@ -80,7 +80,7 @@ class OverlayController(private val context: Context) {
         }
 
         return runCatching {
-            windowManager.addView(container, layoutParams)
+            windowManager?.addView(container, layoutParams)
             panel = container
             startedAt = System.currentTimeMillis()
             true

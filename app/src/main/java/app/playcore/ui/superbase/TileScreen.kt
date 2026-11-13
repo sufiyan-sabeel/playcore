@@ -90,9 +90,9 @@ fun TileScreen(
 private fun GameCenterTile(state: SystemUiState, onOpenGame: (String) -> Unit) {
     BanneredPanel(title = "Career") {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.m)) {
-            Metric("Playtime", formatPlaytime(state.totalPlayMs))
-            Metric("Rank", state.rank)
-            Metric("Games", state.games.size.toString())
+            Metric("Playtime", formatPlaytime(state.totalPlayMs), Modifier.weight(1f))
+            Metric("Rank", state.rank, Modifier.weight(1f))
+            Metric("Games", state.games.size.toString(), Modifier.weight(1f))
         }
     }
     Spacer(Modifier.height(Space.xl))
@@ -438,8 +438,8 @@ private fun RootToolsTile(state: SystemUiState, viewModel: SystemViewModel) {
 }
 
 @Composable
-private fun Metric(label: String, value: String) {
-    Column(modifier = Modifier.weight(1f)) {
+private fun Metric(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         Text(value, style = MaterialTheme.typography.headlineSmall, color = Console.VioletLight)
         Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = Console.TextDim)
     }

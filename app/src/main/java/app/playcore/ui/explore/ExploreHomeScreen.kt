@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.playcore.core.designsystem.Console
 import app.playcore.core.designsystem.Space
 import app.playcore.core.model.Game
+import app.playcore.overlay.label
 import app.playcore.ui.components.AngularButton
 import app.playcore.ui.components.AppIcon
 import app.playcore.ui.components.BanneredPanel
@@ -79,9 +80,9 @@ fun ExploreHomeScreen(
             ) {
                 BanneredPanel(title = "Session") {
                     Row(horizontalArrangement = Arrangement.spacedBy(Space.m)) {
-                        Stat("In library", state.games.size.toString())
-                        Stat("Playtime", formatPlaytime(state.totalPlayMs))
-                        Stat("Rank", state.rank)
+                        Stat("In library", state.games.size.toString(), Modifier.weight(1f))
+                        Stat("Playtime", formatPlaytime(state.totalPlayMs), Modifier.weight(1f))
+                        Stat("Rank", state.rank, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(Space.m))
                     Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
@@ -155,8 +156,8 @@ fun ExploreHomeScreen(
 }
 
 @Composable
-private fun Stat(label: String, value: String) {
-    Column(modifier = Modifier.weight(1f)) {
+private fun Stat(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         Text(value, style = MaterialTheme.typography.headlineSmall, color = Console.VioletLight)
         Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = Console.TextDim)
     }

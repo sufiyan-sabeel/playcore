@@ -83,7 +83,7 @@ class GameDetailViewModel(
 
     fun setRefreshRate(hz: Int?) = updateProfile { it.copy(refreshRateHz = hz) }
 
-    private fun updateProfile(block: (GameProfile) -> Unit) {
+    private fun updateProfile(block: (GameProfile) -> GameProfile) {
         val current = uiState.value.profile ?: GameProfile(packageName = packageName)
         viewModelScope.launch { repository.saveProfile(block(current)) }
     }
