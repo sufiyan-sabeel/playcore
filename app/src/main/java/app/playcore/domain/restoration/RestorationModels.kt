@@ -77,9 +77,24 @@ data class RestorationRecord(
     val failure: FailureInfo? = null,
     val updatedAt: Long = 0L,
 ) {
-    /** True when this record still holds a value that must be put back. */
+    /**
+     * True when this record still holds a value that must be put back, or when a
+     * previous attempt failed and should be retried. A failed restore stays
+     * retryable: dropping it would strand the device in the changed state.
+     */
     val needsRestore: Boolean
-        get() = restoreStatus == RestoreStatus.PENDING
+        get() = when (restoreStatus) {
+            RestoreStatus.PENDING,
+            RestoreStatus.FAILED_RESTORE,
+            RestoreStatus.UNRESOLVED,
+            -> true
+
+            RestoreStatus.NOT_REQUIRED,
+            RestoreStatus.RESTORED,
+            RestoreStatus.RESTORED_UNVERIFIED,
+            RestoreStatus.SKIPPED_CHANGED_EXTERNALLY,
+            -> false
+        }
 }
 
 data class SessionOutcome(
