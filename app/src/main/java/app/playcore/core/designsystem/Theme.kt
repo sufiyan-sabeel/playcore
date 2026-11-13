@@ -55,10 +55,10 @@ fun accentColor(choice: AccentChoice): Color = when (choice) {
 }
 
 private fun darkScheme(amoled: Boolean, accent: AccentChoice) = darkColorScheme(
-    primary = accent,
+    primary = accentColor(accent),
     onPrimary = Color(0xFF04100F),
-    primaryContainer = accent.copy(alpha = 0.18f),
-    onPrimaryContainer = accent,
+    primaryContainer = accentColor(accent).copy(alpha = 0.18f),
+    onPrimaryContainer = accentColor(accent),
     secondary = PlaycorePalette.TextSecondary,
     onSecondary = Color(0xFF04100F),
     background = if (amoled) PlaycorePalette.Amoled else PlaycorePalette.Graphite,
@@ -76,9 +76,9 @@ private fun darkScheme(amoled: Boolean, accent: AccentChoice) = darkColorScheme(
 )
 
 private fun lightScheme(accent: AccentChoice) = lightColorScheme(
-    primary = accent.copy(alpha = 0.95f),
+    primary = accentColor(accent),
     onPrimary = Color.White,
-    primaryContainer = accent.copy(alpha = 0.15f),
+    primaryContainer = accentColor(accent).copy(alpha = 0.15f),
     onPrimaryContainer = Color(0xFF0B3B37),
     background = PlaycorePalette.LightSurface,
     onBackground = PlaycorePalette.LightText,
