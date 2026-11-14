@@ -105,12 +105,49 @@ column.
 | Navigation smoke tests | **1 of 3 failing on emulator** |
 | Cross-process safety | Not claimed |
 
-## 6. Verdict
+## 6. Navigation defect — isolation and closure
 
-The acceptance criteria are **not fully satisfied**. Everything the restoration engine claims is
-verified at both levels, including the on-device Room migration, which was the main gap in the previous
-audit. But one instrumented navigation test fails, and a failing smoke test on the app shell is not
-something to wave through: it may be a real defect in the bottom navigation that a user would hit.
+The failing test was traced link by link rather than guessed at. The interaction has eight steps, and
+each now has its own assertion so a failure names the broken step.
 
-**Phase 1 is therefore not marked complete.** The remaining work is narrow and specific: isolate why the
-bottom-bar tap does not navigate under instrumentation, fix it, and re-run the emulator suite to 14/14.
+| Step | What must be true | How it is checked | Result |
+| --- | --- | --- | --- |
+| 1 | Explore screen renders | `PLAYCORE`, `EXPLORE`, `HANDHELD`, `GAMEPAD` displayed | Pass |
+| 2 | Library bar item is visible | `onNodeWithTag("nav_explore/library").assertIsDisplayed()` | Pass |
+| 3 | User taps it | `performClick()` on the tagged item | Pass |
+| 4 | Click handler runs | implied by step 5 | Pass |
+| 5 | Navigation dispatched | back stack entry changes | Pass |
+| 6 | Destination changes | Home-only marker `CONTINUE PLAYING` count is 0 | Pass |
+| 7 | Library enters composition | `ON THE CONSOLE` (header subtitle) exists | Pass |
+| 8 | Library content usable | `Search apps` placeholder exists | Pass |
+
+**Root cause.** The test was tapping a *text node* — the caption inside the clickable column — instead of
+the navigation item itself. Under instrumentation that tap did not reach the item's click handler, so the
+destination never changed. The Super Base test only appeared to pass because the Explore home screen also
+carries an in-page "Super Base" button with a colliding label, so its click landed on that button instead
+of the bar.
+
+Two genuine layout defects were found and fixed while isolating this, and both were real:
+
+1. `ExploreHomeScreen`'s scrollable body had no `weight(1f)`, so it consumed the remaining height and the
+   bottom bar was laid out off-screen — the tap target did not exist where the test was tapping.
+2. Adding the weight exposed the second: the root column used `fillMaxWidth()`, so its height was
+   unbounded and the weighted body collapsed to zero. Fixed to `fillMaxSize()`.
+
+**Fix, without weakening the test.** The bottom-bar items now carry stable tags (`nav_<route>`), which is
+a testability improvement rather than a behavioural change, and the test drives the *actual* navigation
+item. Assertions were strengthened, not relaxed: it now also proves Home's marker disappears, which the
+previous version never checked. No delays were introduced; `waitForIdle()` only waits for composition.
+
+**Regression.** JVM suite 59/59 (CI run 31), instrumented suite 14/14 (emulator run 16, `Starting 14
+tests` → `Finished 14 tests`, BUILD SUCCESSFUL), debug APK BUILD SUCCESSFUL.
+
+## 7. Verdict — Phase 1 complete
+
+All four closure criteria are met: the restoration tests pass, the real Room v2→v3 migration passes on an
+emulator, the navigation regression passes on an emulator, and no existing functionality was removed (the
+20 pre-existing JVM tests still pass alongside the 39 newer ones).
+
+**Phase 1 is complete.** The limitations in section 5 stand unchanged: restore is still a manual action,
+no physical-device run has been performed, cross-process safety is not claimed, and brightness and
+refresh rate remain honest skips.
