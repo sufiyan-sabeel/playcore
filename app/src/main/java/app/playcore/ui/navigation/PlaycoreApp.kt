@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -188,6 +189,7 @@ private fun ExploreBottomBar(currentRoute: String?, nav: NavHostController) {
                 icon = destination.icon,
                 caption = destination.label,
                 selected = currentRoute == destination.route,
+                modifier = Modifier.testTag("nav_${destination.route}"),
                 onClick = { if (currentRoute != destination.route) nav.navigateTop(destination.route) },
             )
         }
